@@ -1,0 +1,19 @@
+import java.util.*;
+import java.util.concurrent.locks.*;
+
+interface Cache {
+void put(int key, byte[] value);
+byte[] get(int key);
+void evict(int key);
+}
+
+class CacheImpl{
+	final int N;
+
+	CacheImpl(int N){ this.N = N;}
+	Map<Integer, byte[]> map;
+	Lock l = new ReentrantLock();
+	
+
+}
+

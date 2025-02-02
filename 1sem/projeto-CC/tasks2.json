@@ -1,0 +1,193 @@
+{
+  "tasks": [
+    {
+      "task_id": "task-1",
+      "frequency": 20,
+      "devices": [
+        {
+          "device_id": "n1",
+          "device_metrics": {
+            "cpu_usage": true,
+            "ram_usage": true,
+            "interface_stats": ["eth0", "eth1","eth2"]
+          },
+          "link_metrics": {
+            "bandwidth": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "jitter": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.0.1",
+              "duration": 15,
+              "transport_type": "u",
+              "frequency": 23
+            },
+            "packet_loss": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.3.1",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 17
+            },
+            "latency": {
+              "tool": "ping",
+              "destination": "10.0.1.2",
+              "count": 5,
+              "frequency": 13
+            },
+            "alertflow_conditions": {
+              "cpu_usage": 20.0,
+              "ram_usage": 35.0,
+              "interface_stats": 500
+            }
+          }
+        },
+        {
+          "device_id": "n3",
+          "device_metrics": {
+            "cpu_usage": true,
+            "ram_usage": true,
+            "interface_stats": ["eth0", "eth1","eth2"]
+          },
+          "link_metrics": {
+            "bandwidth": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "jitter": {
+              "tool": "*",
+              "role": "*",
+              "server_address": "*",
+              "duration": 0,
+              "transport_type": "*",
+              "frequency": 0
+            },
+            "packet_loss": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.1.1",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 19
+            },
+            "latency": {
+              "tool": "ping",
+              "destination": "10.0.0.1",
+              "count": 7,
+              "frequency": 27
+            },
+            "alertflow_conditions": {
+              "packet_loss": 5,
+              "ram_usage": 23.0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-2",
+      "frequency": 30,
+      "devices": [
+        {
+          "device_id": "n2",
+          "device_metrics": {
+            "cpu_usage": true,
+            "ram_usage": false,
+            "interface_stats": ["eth0","eth2"]
+          },
+          "link_metrics": {
+            "bandwidth": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.1.1",
+              "duration": 10,
+              "transport_type": "*",
+              "frequency": 15
+            },
+            "jitter": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.0.1",
+              "duration": 15,
+              "transport_type": "u",
+              "frequency": 23
+            },
+            "packet_loss": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.1.1",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 19
+            },
+            "latency": {
+              "tool": "*",
+              "destination": "*",
+              "count": 0,
+              "frequency": 0
+            },
+            "alertflow_conditions": {
+              "jitter": 25.0,
+              "interface_stats": 700
+            }
+          }
+        },
+        {
+          "device_id": "n4",
+          "device_metrics": {
+            "cpu_usage": true,
+            "ram_usage": false,
+            "interface_stats": ["eth1","eth2"]
+          },
+          "link_metrics": {
+            "bandwidth": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.1.1",
+              "duration": 10,
+              "transport_type": "*",
+              "frequency": 15
+            },
+            "jitter": {
+              "tool": "*",
+              "role": "*",
+              "server_address": "*",
+              "duration": 0,
+              "transport_type": "*",
+              "frequency": 0
+            },
+            "packet_loss": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.3.1",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 17
+            },
+            "latency": {
+              "tool": "ping",
+              "destination": "10.0.2.1",
+              "count": 3,
+              "frequency": 31
+            },
+            "alertflow_conditions": {
+              "cpu_usage": 22.0,
+              "packet_loss": 7.0
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

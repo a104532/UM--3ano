@@ -1,0 +1,105 @@
+{
+  "tasks": [
+    {
+      "task_id": "task-1",
+      "frequency": 20,
+      "devices": [
+        {
+          "device_id": "r1",
+          "device_metrics": {
+            "cpu_usage": true,
+            "ram_usage": true,
+            "interface_stats": ["eth0", "eth1"]
+          },
+          "link_metrics": {
+            "bandwidth": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "jitter": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "packet_loss": {
+              "tool": "iperf",
+              "role": "c",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "latency": {
+              "tool": "ping",
+              "destination": "10.0.1.2",
+              "count": 5,
+              "frequency": 20
+            },
+            "alertflow_conditions": {
+              "cpu_usage": 1.0,
+              "ram_usage": 4.0,
+              "interface_stats": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "task_id": "task-2",
+      "frequency": 30,
+      "devices": [
+        {
+          "device_id": "r2",
+          "device_metrics": {
+            "cpu_usage": true,
+            "ram_usage": false,
+            "interface_stats": ["eth0"]
+          },
+          "link_metrics": {
+            "bandwidth": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "jitter": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "packet_loss": {
+              "tool": "iperf",
+              "role": "s",
+              "server_address": "10.0.1.2",
+              "duration": 10,
+              "transport_type": "u",
+              "frequency": 15
+            },
+            "latency": {
+              "tool": "*",
+              "destination": "*",
+              "count": 0,
+              "frequency": 0
+            },
+            "alertflow_conditions": {
+              "cpu_usage": 2.0,
+              "interface_stats": 7
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

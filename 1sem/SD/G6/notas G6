@@ -1,0 +1,30 @@
+Cliente
+	
+	
+cs = socket -> new Socket()
+connect
+
+while
+write
+read
+
+close
+
+Server
+
+ls = socket -> new ServerSocket(80)
+bind
+listen (listen socket)
+while{
+
+cs = accept(ls) com várias threads seria ls.accept
+(caso fosse para criar uma nova Thread, seria aqui)
+
+while{
+read
+write
+}
+close
+}
+
+
