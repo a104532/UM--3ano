@@ -1,0 +1,162 @@
+﻿@page "/RemoverReceita"
+@rendermode InteractiveServer
+@using Layout
+@using SIGPAST.Pages
+@using SIGPAST.Features.ApresentacaoProdutos
+@using System.Globalization
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using System.Security.Claims;
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IProdutosData _db_Produtos
+@layout MainLayout
+
+
+<PageTitle>Encomendar</PageTitle>
+
+<AuthorizeView Roles="administrador">
+    <Authorized>
+        <div class="body-left flex-item">
+            <div class="left-content">
+                <div class="left-title">
+                    <h1>É só encomendar e aproveitar</h1>
+                </div>
+
+                <div class="products-container">
+                    <div class="products-wrapper">
+                        <div>
+                            <button class="page-control prev" @onclick="PreviousPage">
+                                <span class="arrow">‹</span>
+                            </button>
+                        </div>
+
+                        <div class="products-page">
+                            @{
+                                int loadedProducts = 0;
+                                foreach (var (prod, index) in produtos.Select((value, i) => (value, i)))
+                                {
+                                    if (loadedProducts >= productsPerPage)
+                                    {
+                                        break;
+                                    }
+
+                                    if (index >= currentPage * productsPerPage && index <= currentPage * productsPerPage + productsPerPage - 1)
+                                    {
+                                        <div class="product-item">
+                                            <div class="card">
+                                                <button class="card-btn" @onclick="() => ClickProduto(prod)">x</button>
+                                                <img src="@prod.imagem" alt="@prod.designacao" />
+                                                <p>@prod.designacao</p>
+                                            </div>
+                                        </div>
+                                        loadedProducts++;
+                                    }
+                                }
+                            }
+                        </div>
+
+                        <div>
+                            <button class="page-control next" @onclick="NextPage">
+                                <span class="arrow">›</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="product-indicators">
+                        @{
+                            int pageCount = (int)Math.Ceiling(produtos.Count / (double)productsPerPage) - 1;
+                            for (int i = 0; i <= pageCount; i++)
+                            {
+                                if (i > 10) { break; }
+                                <div class="indicator @(currentPage == i ? "active" : "")">
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="body-right flex-item">
+            <div class="right-content">
+                @if(showConfirmation){
+                    <div class="container">
+                        <div class="text">
+                            Tem a certeza que quer prosseguir com a remoção da receita @produto.designacao?
+                        </div>
+
+                        <hr>
+
+                        <div class="button-container">
+                            <button class="btn" @onclick="Sim">Sim</button>
+                            <button class="btn" @onclick="Nao">Não</button>
+                        </div>
+
+                    </div>
+                }
+        
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AcessoNegado />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+
+    public List<Produto> produtos { get; set; } = new();
+    public Produto produto { get; set; } = new();
+    private int currentPage = 0;
+    private int productsPerPage = 2;
+    private bool showConfirmation = false;
+
+    
+    protected override async Task OnInitializedAsync()
+        {
+        produtos = await _db_Produtos.GetAll();
+        produto = produtos[0];
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < (int)Math.Ceiling(produtos.Count / (double)productsPerPage) - 1)
+        {
+            currentPage++;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            StateHasChanged();
+        }
+    }
+
+    private async void ClickProduto(Produto p)
+    {
+        produto = p;
+        showConfirmation = true;
+        StateHasChanged();
+        
+    }
+
+    private void Sim(){
+		_db_Produtos.removeProduto(produto.idProduto);
+        var productToRemove = produtos.FirstOrDefault(p => p.designacao == produto.designacao);
+        if (productToRemove != null)
+        {
+            produtos.Remove(productToRemove);
+        }
+        StateHasChanged();
+        showConfirmation = false;
+    }
+
+    private void Nao()
+    {
+        showConfirmation = false;
+    }
+}

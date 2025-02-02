@@ -1,0 +1,176 @@
+﻿@page "/MinhasEncomendas"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Mvc
+@using System.ComponentModel.DataAnnotations
+@using Layout
+@using DataAccessLibrary
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using SIGPAST.Features.ApresentacaoProdutos
+@using SIGPAST.Pages
+@using System.Security.Claims;
+@inject IEncomendasData _db
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IEncomendasData _db_Encomendas
+@inject IProdutosData _db_Produtos
+@inject IPassosProducaoData _db_PassosProducao
+@layout MainLayout
+
+
+<PageTitle>Minhas Encomendas</PageTitle>
+
+<AuthorizeView Roles="cliente">
+    <Authorized>
+        <div class="body-left flex-item">
+            <div class="left-content">
+                <div class="left-title">
+                    <h1>É só encomendar e aproveitar</h1>
+                </div>
+
+                <ApresentacaoProdutos Small=true/>
+            </div>
+        </div>
+        <div class="body-right flex-item">
+            <div class="right-content">
+                <div class="right-title">
+                    Minhas encomendas
+                </div>
+
+                <div class="scrollable-panel">
+                    @foreach (var encomenda in encomendas) 
+                    {
+                        Produto produto = produtos[encomenda.idEncomenda];
+                        List<PassoProducao> passos = passosPorEncomenda[encomenda.idEncomenda];
+
+                        <div class="order-item">
+                            <div class="order-header">
+                                <span>Encomenda número: @encomenda.idEncomenda</span>
+                            </div>
+
+                            <div class="product-info">
+                                <div class="product-left">
+                                    <p>@produto.designacao</p>
+
+                                    <img src="@produto.imagem" />
+                                </div>
+                                <div class="product-right">
+                                    <div class="state-title">
+                                        <span>Estado atual</span>
+                                    </div>
+                                    @if(encomenda.estado == "em_processo"){
+                                        <div class="state-display">
+                                            <button class="arrow-button" @onclick="() => PreviousPasso(encomenda.idEncomenda)">
+                                                <span class="arrow">‹</span>
+                                            </button>
+
+                                            <img src="@passos[passoAtualPorEncomenda[encomenda.idEncomenda]-1].imagem" />
+
+                                            <button class="arrow-button" @onclick="() => NextPasso(encomenda.idEncomenda)">
+                                                <span class="arrow">›</span>
+                                            </button>
+                                        </div>
+                                    }
+                                    else{
+                                        if (encomenda.estado == "nao_iniciado") 
+                                        {
+                                            <p>Não iniciado</p>
+                                        }
+								        else if (encomenda.estado == "finalizado") 
+                                        {
+                                            <p>Finalizado!</p>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AcessoNegado />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    private List<Encomenda> encomendas { get; set; } = new ();
+    private Dictionary<int, Produto> produtos = new();
+    private Dictionary<int, List<PassoProducao>> passosPorEncomenda = new();
+    private Dictionary<int, int> passoAtualPorEncomenda = new();
+    private string email = "";
+
+    protected override async Task OnInitializedAsync()
+    {   
+        
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        email = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+
+        Console.WriteLine($"Email do gajo: {email}");
+        
+        encomendas = await _db_Encomendas.GetEncomendasCliente(email);
+
+
+        foreach (var encomenda in encomendas)
+        {
+          
+            produtos[encomenda.idEncomenda] = await _db_Produtos.getProduto(encomenda.idProduto);
+
+            passosPorEncomenda[encomenda.idEncomenda] = await _db_PassosProducao.getPassosProducaoEncomenda(encomenda.idProduto, encomenda.nrPasso);
+
+            passoAtualPorEncomenda[encomenda.idEncomenda] = encomenda.nrPasso;
+        }
+
+        foreach (var encomenda in encomendas)
+        {
+            Console.WriteLine($"Encomenda: {encomenda.idEncomenda}");
+
+            Produto p = produtos[encomenda.idEncomenda];
+			Console.WriteLine($"Produto: {p.designacao}");
+
+			List<PassoProducao> passos = passosPorEncomenda[encomenda.idEncomenda];
+			foreach (var passo in passos)
+            {
+				Console.WriteLine($"Passo: {passo.texto}");
+                Console.WriteLine($"imagem: {passo.imagem}");
+            }
+
+            int passoAtual = passoAtualPorEncomenda[encomenda.idEncomenda];
+			Console.WriteLine($"Passo atual: {passoAtual}");
+        }
+    }
+
+    private void NextPasso(int idEncomenda)
+    {
+        if (passoAtualPorEncomenda[idEncomenda] < passosPorEncomenda[idEncomenda].Count)
+        {
+            passoAtualPorEncomenda[idEncomenda]++;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void PreviousPasso(int idEncomenda)
+    {
+        if (passoAtualPorEncomenda[idEncomenda] > 1)
+        {
+            passoAtualPorEncomenda[idEncomenda]--;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<Produto> getProduto(int idProduto)
+    {
+        return await _db_Produtos.getProduto(idProduto);
+
+    }
+
+	private async Task<List<PassoProducao>> getPassos(int idProduto,int nrPasso)
+	{
+
+        return await _db_PassosProducao.getPassosProducaoEncomenda(idProduto,nrPasso);
+	
+	}
+}

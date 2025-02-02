@@ -1,0 +1,94 @@
+﻿@rendermode InteractiveServer
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@inject IProdutosData _db
+
+<div class="products-container">
+    <div class="products-wrapper @(Small ? "small" : "")">
+        <div>
+            <button class="page-control prev" @onclick="PreviousPage">
+                <span class="arrow">‹</span>
+            </button>
+        </div>
+
+        <div class="products-page">
+            @{
+                int loadedProducts = 0;
+                foreach (var (prod, index) in Produtos.Select((value, i) => (value, i)))
+                {
+                    if (loadedProducts >= productsPerPage)
+                    {
+                        break;
+                    }
+
+                    if (index >= currentPage * productsPerPage && index <= currentPage * productsPerPage + productsPerPage - 1)
+                    {
+                        <div class="product-item">
+                            <div class="card">
+                                <img src="@prod.imagem" alt="@prod.designacao" />
+                                <p>@prod.designacao</p>
+                            </div>
+                        </div>
+                        loadedProducts++;
+                    }
+                }
+            }
+        </div>
+
+        <div>
+            <button class="page-control next" @onclick="NextPage">
+                <span class="arrow">›</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="product-indicators">
+        @{
+            int pageCount = (int)Math.Ceiling(Produtos.Count / (double)productsPerPage) - 1;
+            for (int i = 0; i <= pageCount; i++)
+            {
+                if(i > 10){ break; }
+                <div class="indicator @(currentPage == i ? "active" : "")">
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Small { get; set; }
+
+    //Em vez de ser assim, ir buscar à base de dados e tal
+    public List<Produto> Produtos { get; set; } = new List<Produto>();
+
+    private int currentPage = 0;
+    private int productsPerPage = 3;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Small)
+        {
+            productsPerPage = 2;
+        }
+
+        Produtos = await _db.GetAll();
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < (int)Math.Ceiling(Produtos.Count / (double)productsPerPage) - 1)
+        {
+            currentPage++;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            StateHasChanged();
+        }
+    }
+}

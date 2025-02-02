@@ -1,0 +1,98 @@
+﻿.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.outer-registo {
+    width: 30rem;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0px 5px rgba(255, 255, 255, 0.4);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 20px;
+}
+
+.logo img {
+    width: 4.5rem;
+    height: auto;
+    margin-bottom: 1.5rem;
+    margin-top: 1rem;
+    border: 2px solid black;
+    border-radius: 50%;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    width: 90%;
+    box-sizing: border-box;
+    font-weight: 600;
+}
+
+.form-email {
+    margin-top: 1.5rem;
+}
+
+input {
+    flex: 1; 
+    padding: 0.5rem 1rem;
+    border: 1px solid black;
+    color: black;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    outline: none;
+    transition: 0.3s;
+    box-sizing: border-box;
+}
+
+    input::placeholder {
+        color: black;
+        font-weight: 600;
+    }
+
+    input:focus {
+        border-color: black;
+        box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+    }
+
+.submit-button {
+    background-color: black;
+    color: #f4e492;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s;
+    width: 40%;
+}
+
+    .submit-button:hover {
+        color: black;
+        background-color: #f4e492;
+    }
+
+.error-message {
+    color: red;
+    font-size: 15px;
+}

@@ -1,0 +1,48 @@
+﻿@page "/UserHome"
+@rendermode InteractiveServer
+@using Layout
+@using SIGPAST.Features.ApresentacaoProdutos
+@using SIGPAST.Features.Login
+@inject NavigationManager NavigationManager
+@layout MainLayout
+
+<PageTitle>Início</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+    <div class="body-left flex-item">
+        <p class="left background center">
+            <div class="left-content">
+                <div class="left-title">
+                    <h1>É só encomendar e aproveitar</h1>
+                </div>
+                <ApresentacaoProdutos Small=true/>
+            </div>
+        </p>
+    </div>
+    <div class="body-right flex-item">
+        <div class="right-content">
+            <div class="right-title1">
+                Bem-vindo
+            </div>
+
+            <div class="right-title2">
+                <div class="right-title2-1">
+                    Pastelar
+                </div>
+
+                <div class="right-title2-2">
+                    by
+                </div>
+
+                <div class="right-title2-3">
+                    SIGPAST
+                </div>
+            </div>
+        </div>
+    </div>
+    </Authorized>
+    <NotAuthorized>
+        <Login />
+    </NotAuthorized>
+</AuthorizeView>

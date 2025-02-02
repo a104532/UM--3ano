@@ -1,0 +1,237 @@
+﻿@page "/encomendas"
+@rendermode InteractiveServer
+@using Layout
+@using DataAccessLibrary.Models
+@using DataAccessLibrary.Interfaces
+@using SIGPAST.Features.ApresentacaoProdutos
+@using SIGPAST.Features.ApresentacaoIngredientes
+@using SIGPAST.Pages
+@inject NavigationManager NavigationManager
+@inject IEncomendasData _dbEncomenda
+@inject IProdutosData _dbProduto
+@inject IPassosProducaoData _dbPassoProducao
+@inject IIngredientesData _dbIngrediente
+
+<PageTitle>Encomendas</PageTitle>
+
+<AuthorizeView Roles="funcionario">
+    <Authorized>
+        <div class="body-left flex-item">
+            <p class="left background center">
+                <div class="left-content">
+                    <div class="left-title">
+                        <h1>É só encomendar e aproveitar</h1>
+                    </div>
+
+                    <ApresentacaoProdutos Small=true />
+                </div>
+            </p>
+        </div>
+
+        <div class="body-right flex-item">
+            <div class="right-content">
+                <div class="outer-order-input">
+                    <div class="order-input">
+                        <label for="order">Número da encomenda</label>
+                        <input id="order" type="number" placeholder="Nº" @oninput="HandleInput"/>
+                    </div>
+                </div>
+
+                @if(encomendaValida){
+                    <div class="outer-order-display">
+                        <div class="order-display">
+                            <div class="display-left">
+                                <p class="product-name">@produtoEncomenda.designacao</p>
+                                <img src=@produtoEncomenda.imagem />
+                                <div class="left-text">
+                                    <li class="ingredientes">Ingredientes:</li>
+                                    @foreach (var (quantidade, ingrediente) in ingredientesProduto)
+                                    {
+                                        string line;
+                                        if(ingrediente.unidade.Equals("unidades")){
+                                            line = quantidade + " " + ingrediente.designacao;
+                                        }
+                                        else{
+                                            line = quantidade + " " + ingrediente.UnidadeMenor() + " " + ingrediente.designacao;
+                                        }
+
+                                        <li>@line</li>
+                                    }
+                                </div>
+                            </div>
+                            <div class="display-right">
+                                @foreach (var (passo, index) in passosProduto.Select((value, i) => (value, i)))
+                                {
+                                    if (currentIndex == index)
+                                    {
+                                        <div class="display-passo  @(currentIndex == index ? "active" : "")">
+                                            @{
+                                                if (encomenda.estado.Equals("em_processo") && encomenda.nrPasso == index + 1 && encomenda.nrPasso == produtoEncomenda.nrPassos)
+                                                {
+                                                    <button class="passo-button" @onclick="FinalizarEncomenda">Finalizar Encomenda</button>
+                                                }
+                                                else if (encomenda.estado.Equals("em_processo") && encomenda.nrPasso == index + 1)
+                                                {
+                                                    <p class="product-name">Passo atual</p>
+                                                }
+                                                else if (encomenda.estado.Equals("nao_iniciado") && index == 0)
+                                                {
+                                                    //botao para colocar a encomenda em produção e o passo atual para este passo (primeiro passo)
+                                                    string texto = "Ingredientes em falta";
+                                                    if(IngredientesSuficientes())
+                                                    {
+                                                        texto = "Começar produção";
+                                                    }
+                                                    <button class="passo-button" @onclick="@(e => { if (IngredientesSuficientes()) ComecarEncomenda(passo.nrPasso, passo.idProduto);})">@texto</button>
+                                                }
+                                                else if (encomenda.estado.Equals("em_processo") && encomenda.nrPasso == index)
+                                                {
+                                                    //botao para colocar o passo atual para este passo (passo seguinte)
+                                                    string texto = "Ingredientes em falta";
+                                                    if (IngredientesSuficientes())
+                                                    {
+                                                        texto = "Atualizar passo";
+                                                    }
+                                                    <button class="passo-button" @onclick="@(e => { if (IngredientesSuficientes()) AtualizarPasso(passo.nrPasso, passo.idProduto);})">@texto</button>
+                                                }
+                                                else
+                                                {
+                                                    <p class="product-name">Passo @passo.nrPasso</p>
+                                                }
+                                            }
+
+                                            <img src=@passo.imagem />
+                                            <div class="controlos">
+                                                <button class="page-control" @onclick="PreviousPage">&lt;</button>
+                                                <button class="page-control" @onclick="NextPage">&gt;</button>
+                                            </div>
+                                            <p class="descricao">@passo.texto</p>
+                                        </div>
+
+                                        break;
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AcessoNegado />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool encomendaValida { get; set; } = false;
+    private int numeroEncomenda { get; set; } = -1;
+    private Encomenda encomenda { get; set; }
+    private Produto produtoEncomenda { get; set; }
+    private List<Ingrediente> todosIngredientes { get; set; } = new List<Ingrediente>();
+    private List<(int, Ingrediente)> ingredientesProduto { get; set; } = new List<(int, Ingrediente)>();
+    private List<PassoProducao> passosProduto { get; set; } = new List<PassoProducao>();
+    private List<IngredientePasso> ingredientesPasso { get; set; } = new List<IngredientePasso>();
+    private bool ingredientesSuficientes { get; set; } = false;
+
+    private int currentIndex = 0;
+
+    protected async override Task OnInitializedAsync()
+    {
+        todosIngredientes = await _dbIngrediente.GetAllAsync();
+    }
+
+    private async void HandleInput(ChangeEventArgs e)
+    {
+        string input = (string)e.Value!;
+        try
+        {
+            numeroEncomenda = Int32.Parse(input);
+            encomenda = await _dbEncomenda.GetEncomenda(numeroEncomenda);
+            if (encomenda != null)
+            {
+                produtoEncomenda = await _dbProduto.getProduto(encomenda.idProduto);
+                ingredientesProduto = await _dbProduto.GetIngredientesEQuantidades(produtoEncomenda.idProduto);
+                passosProduto = await _dbPassoProducao.getPassosProducaoEncomenda(produtoEncomenda.idProduto, produtoEncomenda.nrPassos);
+                currentIndex = encomenda.nrPasso - 1;
+                ingredientesPasso = await _dbIngrediente.GetIngredientesPasso(encomenda.nrPasso, produtoEncomenda.idProduto);
+                encomendaValida = true;
+            }
+            else
+            {
+                encomendaValida = false;
+            }
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            encomendaValida = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool IngredientesSuficientes()
+    {
+        return ingredientesSuficientes;
+    }
+
+    private void AtualizaIngredientesSuficientes(){
+        foreach (IngredientePasso ingrediente in ingredientesPasso)
+        {
+            Ingrediente ingredienteStock = todosIngredientes.Find(i => i.idIngrediente == ingrediente.idIngrediente);
+            if (ingredienteStock == null || ingredienteStock.quantidadeStock < ingredienteStock.QuantidadeARemover(ingrediente.quantidade))
+            {
+                ingredientesSuficientes = false;
+                StateHasChanged();
+                return;
+            }
+        }
+        ingredientesSuficientes = true;
+        StateHasChanged();
+    }
+
+    private void ComecarEncomenda(int idPasso, int idProduto)
+    {
+        _dbIngrediente.updateQuantidade(idPasso, idProduto, ingredientesPasso, todosIngredientes);
+        _dbEncomenda.UpdateEstadoEncomenda(encomenda.idEncomenda, "em_processo");
+        encomenda.estado = "em_processo";
+        StateHasChanged();
+    }
+
+    private void AtualizarPasso(int idPasso, int idProduto) 
+    {
+        _dbIngrediente.updateQuantidade(idPasso, idProduto, ingredientesPasso, todosIngredientes);
+        _dbEncomenda.UpdateNrPassoEncomenda(encomenda.idEncomenda, encomenda.nrPasso + 1);
+        encomenda.nrPasso++;
+        StateHasChanged();
+    }
+
+    private void FinalizarEncomenda()
+    {
+        _dbEncomenda.UpdateEstadoEncomenda(encomenda.idEncomenda, "finalizado");
+        encomenda.estado = "finalizado";
+        StateHasChanged();
+    }
+
+    private async void NextPage()
+    {
+        if (currentIndex < passosProduto.Count - 1)
+        {
+            currentIndex++;
+            ingredientesPasso = await _dbIngrediente.GetIngredientesPasso(currentIndex + 1, produtoEncomenda.idProduto);
+            AtualizaIngredientesSuficientes();
+            StateHasChanged();
+        }
+    }
+
+    private async void PreviousPage()
+    {
+        if (currentIndex > 0)
+        {
+            currentIndex--;
+            ingredientesPasso = await _dbIngrediente.GetIngredientesPasso(currentIndex + 1, produtoEncomenda.idProduto);
+            AtualizaIngredientesSuficientes();
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,214 @@
+﻿@page "/Encomendar"
+@rendermode InteractiveServer
+@using Layout
+@using SIGPAST.Pages
+@using SIGPAST.Features.ApresentacaoProdutos
+@using System.Globalization
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using System.Security.Claims;
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IEncomendasData _db_Encomendas
+@inject IProdutosData _db_Produtos
+@layout MainLayout
+
+
+<PageTitle>Encomendar</PageTitle>
+
+<AuthorizeView Roles="cliente">
+    <Authorized>
+        <div class="body-left flex-item">
+            <div class="left-content">
+                <div class="left-title">
+                    <h1>É só encomendar e aproveitar</h1>
+                </div>
+
+                <div class="products-container">
+                    <div class="products-wrapper">
+                        <div>
+                            <button class="page-control prev" @onclick="PreviousPage">
+                                <span class="arrow">‹</span>
+                            </button>
+                        </div>
+
+                        <div class="products-page">
+                            @{
+                                int loadedProducts = 0;
+                                foreach (var (prod, index) in produtos.Select((value, i) => (value, i)))
+                                {
+                                    if (loadedProducts >= productsPerPage)
+                                    {
+                                        break;
+                                    }
+
+                                    if (index >= currentPage * productsPerPage && index <= currentPage * productsPerPage + productsPerPage - 1)
+                                    {
+                                        <div class="product-item">
+                                            <div class="card" @onclick="() => ClickProduto(prod)">
+                                                <img src="@prod.imagem" alt="@prod.designacao" />
+                                                <p>@prod.designacao</p>
+                                            </div>
+                                        </div>
+                                        loadedProducts++;
+                                    }
+                                }
+                            }
+                        </div>
+
+                        <div>
+                            <button class="page-control next" @onclick="NextPage">
+                                <span class="arrow">›</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="product-indicators">
+                        @{
+                            int pageCount = (int)Math.Ceiling(produtos.Count / (double)productsPerPage) - 1;
+                            for (int i = 0;  i <= pageCount; i++)
+                            {
+                                if (i > 10) { break; }
+                                <div class="indicator @(currentPage == i ? "active" : "")">
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="body-right flex-item">
+            <div class="right-content">
+                <div class="right-title">
+                    Encomendar
+                </div>
+
+                <div class="card-container">
+                    <div class="left-section">
+                        <img src="@produto.imagem" alt="@produto.designacao"/>
+
+                        <div class="ingredients">
+                            <p>Ingredientes:</p>
+                            <ul>
+                                @foreach (var ing in ingredientesProduto)
+                                {
+                                    <li>@ing</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="right-section">
+                        <div class="product-title">
+                            @produto.designacao
+                        </div>
+
+                        <hr>
+
+                        <div class="product-description">
+                            @produto.descricao
+                        </div>
+
+                        <hr>
+
+                        <div class="form-row">
+                            <input type="text" id="dataEntrega" name="dataEntrega" placeholder="Data de entrega (dd/mm/aaaa)" required @bind="data">
+                        </div>
+
+                        @if (problemaData)
+                        {
+                            <p class="error-message">Data inserida inválida.</p>
+                        }
+
+                        <button class="submit-button" @onclick="FazerEncomenda">Encomendar</button>
+
+                        @if (encomendaRealizada)
+                        {
+                            <p class="encomenda-message">Encomenda realizada!</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AcessoNegado />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    public List<Produto> produtos { get; set; } = new();
+
+    public Produto produto { get; set; } = new();
+
+    private int currentPage = 0;
+    private int productsPerPage = 2;
+    private string data;
+    private DateTime dataValue;
+    private List<string> ingredientesProduto = new();
+    private Boolean problemaData = false;
+    private Boolean encomendaRealizada = false;
+    private string email = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        produtos = await _db_Produtos.GetAll();
+        produto = produtos[0];
+        ingredientesProduto = await _db_Produtos.getIngredientesProduto(produto.idProduto);
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        email = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < (int)Math.Ceiling(produtos.Count / (double)productsPerPage) - 1)
+        {
+            currentPage++;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            StateHasChanged();
+        }
+    }
+
+    private async void ClickProduto(Produto p){
+        produto = p;
+        ingredientesProduto = await _db_Produtos.getIngredientesProduto(produto.idProduto);
+        encomendaRealizada = false;
+        StateHasChanged();
+    }
+
+    private bool checkProblemaData()
+    {
+        if (!DateTime.TryParseExact(data, "dd/MM/yyyy", new CultureInfo("pt-PT"), DateTimeStyles.None, out dataValue))
+        {
+            return true;
+        }
+        else return false;
+    }
+
+    private void FazerEncomenda()
+    {
+        encomendaRealizada = false;
+        problemaData = checkProblemaData();
+
+        if(!problemaData){
+            Encomenda novaEncomenda = new Encomenda(dataValue,email,produto.idProduto);
+
+            _db_Encomendas.insertEncomenda(novaEncomenda);
+
+            encomendaRealizada = true;
+        }
+	}
+	
+}

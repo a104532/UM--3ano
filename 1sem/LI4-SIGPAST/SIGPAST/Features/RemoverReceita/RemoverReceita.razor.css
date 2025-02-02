@@ -1,0 +1,231 @@
+﻿.body {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
+.body-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4e492;
+    width: 38%;
+}
+
+.left-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    padding: 20px 0;
+    flex-direction: column;
+}
+
+.left-title {
+    width: 100%;
+    text-align: center;
+}
+
+.products-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    transform: scale(0.8);
+}
+
+.products-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.products-page {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.product-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 280px;
+    height: 330px;
+}
+
+.card {
+    position: relative;
+    background: #242424;
+    border: 2px solid white;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+    .card img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 1.5px solid white;
+        border-radius: 12px;
+    }
+
+    .card p {
+        margin-top: 15px;
+        color: white;
+        font-size: 23px;
+        transition: color 0.2s ease-in-out;
+    }
+
+.card-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 50%;
+    background-color: white;
+    color: black;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+    .card-btn:hover {
+        color: red;
+    }
+
+.page-control {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.arrow {
+    font-size: 48px;
+    line-height: 1;
+    -webkit-text-stroke: 1px #242424;
+}
+
+.product-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border: 1px solid white;
+    border-radius: 50%;
+    background: #242424;
+    transition: background-color 0.2s ease;
+}
+
+    .indicator.active {
+        background: #f4e492;
+        border: 1px solid #242424;
+    }
+
+.body-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #242424;
+    width: 68%;
+    display: flex;
+}
+
+.right-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    text-align: center;
+    position: relative;
+}
+
+.container {
+    width: 450px;
+    height: 250px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    display: flex;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+    .container hr {
+        border: none;
+        border-top: 2px solid black;
+        margin: 0.5rem 0;
+        width: 90%;
+        opacity: 1;
+    }
+
+.text {
+    text-align: left;
+    width: 90%;
+    color: black;
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+    margin-left: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: row;
+    width: 80%;
+    margin-top: 0.5rem;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.btn {
+    background-color: white;
+    color: black;
+    border: 2px solid black;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s;
+    width: 40%;
+}
+
+    .btn:hover {
+        color: black;
+        background-color: #f4e492;
+    }
+

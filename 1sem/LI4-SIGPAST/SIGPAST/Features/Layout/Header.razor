@@ -1,0 +1,76 @@
+﻿@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization;
+@inject NavigationManager navManager
+
+<div class="header">
+    <div class="logo-title">
+        <AuthorizeView>
+            <Authorized>
+			    <div class="logo">
+				    <a href="/UserHome">
+					    <img src="/images/logo.png" width="40px" height="40px" />
+				    </a>
+			    </div>
+
+                <div class="header-brand-name">
+                    Pastelar
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="header-brand-name not-auth-brand">
+                    Pastelar
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+
+    <div class="header-options">
+        <AuthorizeView>
+            <Authorized>
+                <AuthorizeView Roles="cliente">
+                    <Authorized Context="cliente">
+                        <button class="styled-button" @onclick="@(e => NavigateTo("/MinhasEncomendas?role=Cliente"))">Minhas Encomendas</button>
+					    <button class="styled-button" @onclick="@(e => NavigateTo("/Encomendar?role=Cliente"))">Encomendar</button>
+                    </Authorized>
+                </AuthorizeView>
+
+				<AuthorizeView Roles="funcionario">
+                    <Authorized Context="funcionario">
+                        <div class="header-button">
+                            <button class="styled-button" @onclick="@(e => NavigateTo("/encomendas"))">Encomendas</button>
+                        </div>
+                        <div class="header-button">
+                            <button class="styled-button" @onclick="@(e => NavigateTo("/stock"))">Stock</button>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+				<AuthorizeView Roles="administrador">
+                    <Authorized Context="admin">
+                        <div class="header-button">
+                            <button class="styled-button" @onclick="@(e => NavigateTo("/RemoverReceita"))">Remover Receita</button>
+                        </div>
+                        <div class="header-button">
+                            <button class="styled-button" @onclick="@(e => NavigateTo("/AdicionarReceita"))">Adicionar Receita</button>
+                        </div>
+                        <div class="header-button">
+                            <button class="styled-button" @onclick="@(e => NavigateTo("/stock"))">Stock</button>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <button class="styled-button" @onclick="@(e => NavigateTo("/logout"))">🚪</button>
+            </Authorized>
+            <NotAuthorized>
+                <button class="styled-button" @onclick="@(e => NavigateTo("/login"))">Iniciar Sessão</button>
+                <button class="styled-button" @onclick="@(e => NavigateTo("/registo"))">Criar Conta</button>   
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</div>
+
+@code{
+    private void NavigateTo(string url){
+		navManager.NavigateTo(url);
+    }
+}

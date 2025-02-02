@@ -1,0 +1,126 @@
+﻿@rendermode InteractiveServer
+@using DataAccessLibrary
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using Microsoft.AspNetCore.Mvc
+@using System;
+@using System.Globalization;
+@using System.Text.RegularExpressions;
+@using SIGPAST.Pages
+@inject IIngredientesData _db
+@inject NavigationManager navManager
+
+
+<div class="ingredients-container">
+    <div class="ingredients-wrapper">
+        <div>
+            <button class="page-control prev" @onclick="PreviousPage">
+                <span class="arrow">‹</span>
+            </button>
+        </div>
+
+        <div class="ingredients-page">
+            @{
+                int loadedIngredients = 0;
+                foreach (var (ingrediente, index) in Ingredientes.Select((value, i) => (value, i)))
+                {
+                    if (loadedIngredients >= ingredientsPerPage)
+                    {
+                        break;
+                    }
+
+                    if (index >= currentPage * ingredientsPerPage && index <= currentPage * ingredientsPerPage + ingredientsPerPage - 1)
+                    {
+                        <div class="ingredient-item">
+                            <div class="card">
+                                <img src="@ingrediente.imagem" alt="@ingrediente.designacao" />
+                                <div class="ingredient-text">
+                                    <p>@ingrediente.designacao</p>
+                                    <div class="quantity">
+                                        <div>@ingrediente.quantidadeStock @ingrediente.unidade</div>
+                                            <AuthorizeView Roles="administrador">
+                                                <Authorized>
+                                                    <button class="quantity-button" @onclick="() => AddIngredient(ingrediente)">+</button>
+                                                </Authorized>
+                                                <NotAuthorized>
+                                                    <button class="quantity-button" @onclick="() => RemoveIngredient(ingrediente)">-</button>
+                                                </NotAuthorized>
+                                            </AuthorizeView>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        loadedIngredients++;
+                    }
+                }
+            }
+        </div>
+
+        <div>
+            <button class="page-control next" @onclick="NextPage">
+                <span class="arrow">›</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="ingredient-indicators">
+        @{
+            int pageCount = (int)Math.Ceiling(Ingredientes.Count / (double)ingredientsPerPage) - 1;
+            for (int i = 0; i <= pageCount; i++)
+            {
+                if (i > 10) { break; }
+                <div class="indicator @(currentPage == i ? "active" : "")">
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<Ingrediente> Ingredientes { get; set; } = new();
+    private int currentPage = 0;
+    private int ingredientsPerPage = 4;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Ingredientes = await _db.GetAll();
+
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < (int)Math.Ceiling(Ingredientes.Count / (double)ingredientsPerPage) - 1)
+        {
+            currentPage++;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            StateHasChanged();
+        }
+    }
+
+    private async void AddIngredient(Ingrediente ingrediente)
+    {
+        ingrediente.quantidadeStock++;
+        await _db.updateQuantidadeSimples(ingrediente.idIngrediente, ingrediente.quantidadeStock);
+        StateHasChanged();
+    }
+
+    private async void RemoveIngredient(Ingrediente ingrediente)
+    {
+        if(ingrediente.quantidadeStock > 0)
+        {
+            ingrediente.quantidadeStock--;
+            await _db.updateQuantidadeSimples(ingrediente.idIngrediente, ingrediente.quantidadeStock);
+            StateHasChanged();
+        }
+    }
+}
+

@@ -1,0 +1,95 @@
+﻿.small {
+    transform: scale(0.8);
+}
+
+.products-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.products-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.products-page {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.product-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 280px;
+    height: 330px;
+}
+
+.card {
+    background: #242424;
+    border: 2px solid white;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .card img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border: 1.5px solid white;
+        border-radius: 12px;
+    }
+
+    .card p {
+        margin-top: 15px;
+        color: white;
+        font-size: 23px;
+        font-weight: 600;
+    }
+
+.page-control {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: white;
+}
+
+.arrow {
+    font-size: 48px;
+    line-height: 1;
+    -webkit-text-stroke: 1px #242424;
+}
+
+.product-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.indicator {
+    width: 10px;
+    height: 10px;
+    border: 1px solid white;
+    border-radius: 50%;
+    background: #242424;
+    transition: background-color 0.2s ease;
+}
+    
+    .indicator.active {
+        background: #f4e492;
+        border: 1px solid #242424;
+    }

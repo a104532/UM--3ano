@@ -1,0 +1,28 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using SIGPAST.Features.ApresentacaoProdutos
+@inject NavigationManager NavigationManager
+
+<PageTitle>Início</PageTitle>
+
+<div class="body-left flex-item">
+    <div class="left-content" style="width: 100%; height: 100%;">
+       <div class="center" style="width: 100%; height: 100%;">
+            <p class="left background center">
+                <img class="logo" src="/images/logo.png" width="260px" height="260px" />
+            </p>
+       </div>
+    </div>
+</div>
+<div class="body-right flex-item">
+    <p class="right background center">
+        <div class="right-content">
+            <div class="right-content-main">
+                <ApresentacaoProdutos Small=false/>
+            </div>
+            <div class="right-content-copyright">
+                © 2024 the copyright is owned by OPaulo
+            </div>
+        </div>
+    </p>
+</div>

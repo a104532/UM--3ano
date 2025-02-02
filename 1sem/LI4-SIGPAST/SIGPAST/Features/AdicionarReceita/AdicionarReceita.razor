@@ -1,0 +1,247 @@
+﻿@page "/AdicionarReceita"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Mvc
+@using System.ComponentModel.DataAnnotations
+@using Layout
+@using DataAccessLibrary
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using SIGPAST.Features.ApresentacaoProdutos
+@using SIGPAST.Pages
+@using System.Security.Claims;
+@using System.IO
+@using Microsoft.AspNetCore.Hosting;
+@inject IWebHostEnvironment _hostingEnvironment;
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IIngredientesData _db_Ingredientes
+@inject IProdutosData _db_Produtos
+@inject IPassosProducaoData _db_PassosProducao
+@layout MainLayout
+
+<PageTitle>Adicionar Receita</PageTitle>
+
+<AuthorizeView Roles="administrador">
+    <Authorized>
+        <div class="body-left flex-item">
+            <div class="left-content">
+                <div class="left-title">
+                    <h1>É só encomendar e aproveitar</h1>
+                </div>
+
+                <ApresentacaoProdutos Small=true />
+            </div>
+        </div>
+        <div class="body-right flex-item">
+            <div class="right-content">
+                <div class="right-panel">
+                    <div class="right-panel-left">
+                        <div class="right-title">
+                            Adicionar Receita
+                        </div>
+
+                        <div class="designacao-input">
+                            <input type="text" id="nome" name="nome" placeholder="Nome" required @bind="designacaoProduto">
+                        </div>
+
+                        <div class="descricao-input">
+                            <input type="text" id="descricao" name="descricao" placeholder="Descrição" required @bind="descricaoProduto">
+                        </div>
+
+                        <div class="image-upload-produto">
+                            <div class="imagem-title-produto">
+                                Adicionar imagem do produto
+                            </div>
+                            <InputFile OnChange="CarregarImagemProduto" accept="image/*" class="form-control" />
+                        </div>
+
+                        <button class="submit-button" @onclick="AddReceita">Adicionar receita</button>
+
+                        @if (receitaAdicionada)
+                        {
+                            <p class="done-message">Receita adicionada!</p>
+                        }
+
+                    </div>
+                    <div class="right-panel-right">
+
+                        <div class="left-title">
+                            Adicionar passo
+                        </div>
+
+                        <div class="texto-input">
+                            <input type="text" id="nome" name="nome" placeholder="Descrição do Passo" required @bind="textoPasso">
+                        </div>
+
+                        <div class="image-passo">
+                            <div class="imagem-title-passo">
+                                Adicionar imagem do passo
+                            </div>
+                            <InputFile OnChange="CarregarImagemPasso" accept="image/*" class="form-control" />
+                        </div>
+
+                        <label>Ingredientes:</label>
+
+                        @foreach (var ingredient in ingredientes)
+                        {
+                            ingredientesSelecionados[ingredient.idIngrediente].idIngrediente = ingredient.idIngrediente;
+                            <div class="ingredient-item">
+                                <input type="checkbox" name="designacao" @bind="ingredientesSelecionados[ingredient.idIngrediente].IsSelected" id="designacao">
+                                <label for="ingredient-@ingredient.designacao" class="ing">@ingredient.designacao</label>
+
+                                <input type="number" name="quantidade" placeholder="Quantidade (@ingredient.UnidadeMenor())"
+                                @bind="ingredientesSelecionados[ingredient.idIngrediente].Quantidade" class=" quantity-input" step="1">
+                            </div>
+                        }
+
+                        <button class="submit-button" @onclick="AddPasso">Adicionar passo</button>
+
+                        @if(passoAdicionado){
+                            <p class="done-message">Passo adicionado!</p>
+                        }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <AcessoNegado />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code{
+
+    public class IngredienteSelecionado
+    {
+        public int? idIngrediente { get; set; }
+        public bool IsSelected { get; set; }
+        public float? Quantidade { get; set; }
+
+        public IngredienteSelecionado(){
+            idIngrediente = null;
+            IsSelected=false;
+            Quantidade = null;
+        }
+
+        public IngredienteSelecionado(IngredienteSelecionado ing)
+        {
+            idIngrediente = ing.idIngrediente;
+            IsSelected = ing.IsSelected;
+            Quantidade = ing.Quantidade;
+        }
+    }
+
+    private string designacaoProduto { get; set; }
+    private string descricaoProduto { get; set; }
+    private string textoPasso { get; set; }
+    private List<(PassoProducao, string, byte[])> passos { get; set; } = new List<(PassoProducao, string, byte[])>();
+    private List<Ingrediente> ingredientes { get; set; } = new List<Ingrediente>();
+    private Dictionary<int, IngredienteSelecionado> ingredientesSelecionados { get; set; } = new Dictionary<int, IngredienteSelecionado>();
+    private Dictionary<int, List<IngredienteSelecionado>> ingredientesPorPasso { get; set; } = new Dictionary<int, List<IngredienteSelecionado>>();
+    private int nrPasso = 1;
+    private string imagemPassoAtual { get; set; }
+    private byte[] imagemPassoBytesAtual { get; set; }
+
+    private string imagemProduto { get; set; }
+    private byte[] imagemProdutoBytes { get; set; }
+	private Boolean receitaAdicionada = false;
+    private Boolean passoAdicionado = false;
+
+    private async Task CarregarImagemProduto(InputFileChangeEventArgs e)
+    {
+        if (e.File != null && e.File.Size > 0)
+        {
+            MemoryStream ms = new MemoryStream();
+            await e.File.OpenReadStream(e.File.Size).CopyToAsync(ms);
+            imagemProdutoBytes = ms.ToArray();
+            imagemProduto = e.File.Name;
+        }
+    }
+
+    private async Task CarregarImagemPasso(InputFileChangeEventArgs e)
+    {
+        if (e.File != null && e.File.Size > 0)
+        {
+            MemoryStream ms = new MemoryStream();
+            await e.File.OpenReadStream(e.File.Size).CopyToAsync(ms);
+            imagemPassoBytesAtual = ms.ToArray();
+            imagemPassoAtual = e.File.Name;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ingredientes = await _db_Ingredientes.GetAll();
+
+        foreach (var ingrediente in ingredientes)
+        {
+            ingredientesSelecionados[ingrediente.idIngrediente] = new IngredienteSelecionado();
+        }
+    }
+
+
+    private void AddPasso()
+    {
+        foreach (var key in ingredientesSelecionados.Keys)
+        {
+            if (ingredientesSelecionados[key].IsSelected == true)
+            {
+                if (!ingredientesPorPasso.ContainsKey(nrPasso))
+                {
+                    ingredientesPorPasso[nrPasso] = new List<IngredienteSelecionado>();
+                }
+
+                ingredientesPorPasso[nrPasso].Add(new IngredienteSelecionado(ingredientesSelecionados[key]));
+            }
+
+        }
+
+        PassoProducao passo = new PassoProducao();
+        passo.idProduto = -1;
+        passo.nrPasso = nrPasso;
+        passo.texto = textoPasso;
+        passo.imagem = "images/productstep/" + imagemPassoAtual;
+        passos.Add((passo, imagemPassoAtual, imagemPassoBytesAtual));
+
+        nrPasso++;
+        textoPasso = string.Empty;
+        foreach (var key in ingredientesSelecionados.Keys)
+        {
+            ingredientesSelecionados[key].idIngrediente = null;
+            ingredientesSelecionados[key].IsSelected = false;
+            ingredientesSelecionados[key].Quantidade = null;
+        }
+
+		passoAdicionado = true;
+
+    }
+
+    private async void AddReceita()
+    {
+        Produto produto = new Produto();
+        produto.designacao = designacaoProduto;
+        produto.descricao = descricaoProduto;
+        produto.imagem = "images/products/" + imagemProduto;
+        produto.nrPassos = nrPasso--;
+        _db_Produtos.insertProduto(produto);
+        string path = Path.Combine(_hostingEnvironment.WebRootPath, "images", "products", imagemProduto);
+        File.WriteAllBytes(path, imagemProdutoBytes);
+
+        int idProduto = await _db_Produtos.getProdutoIdByName(produto.designacao, produto.descricao);
+       
+        foreach(var (passo, nomeImagem, imagemBytes) in passos){
+			passo.idProduto = idProduto;
+            _db_PassosProducao.insertPassoProducao(passo);
+            string pathImagemPasso = Path.Combine(_hostingEnvironment.WebRootPath, "images", "productstep", nomeImagem);
+            File.WriteAllBytes(pathImagemPasso, imagemBytes);
+			foreach (var ingrediente in ingredientesPorPasso[passo.nrPasso])
+			{
+				_db_PassosProducao.InsertIngredientePassoProducao((int)ingrediente.idIngrediente,passo.nrPasso,(int)idProduto,(float)ingrediente.Quantidade);
+                _db_Produtos.InsertOrUpdateIngredienteProduto((int)ingrediente.idIngrediente, idProduto, (float)ingrediente.Quantidade);
+			}
+        }
+		receitaAdicionada = true;
+	}
+
+}

@@ -1,0 +1,70 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Security.Claims
+@using SIGPAST.Pages
+@using SIGPAST.Authentication
+@inject IUtilizadoresData _db
+@inject IJSRuntime JsRuntime
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authenticationStateProvider
+
+<PageTitle>Login</PageTitle>
+
+<Home />
+
+<div class="overlay">
+	<div class="outer-login">
+		<div class="logo">
+			<a href="/">
+				<img src="/images/logo.png" width="40px" height="40px" />
+			</a>
+		</div>
+
+		<div class="form-row form-row-email">
+			<input type="email" id="email" name="email" placeholder="👤 Email" required @bind="email">
+		</div>
+
+		<div class="form-row form-row-password">
+			<input type="password" id="password" name="password" placeholder="🔑 Password" required @bind="password">
+		</div>
+		@if (authFailed)
+		{
+			<p class="error-message">Password incorreta ou utilizador inválido. Tente novamente.</p>
+		}
+		<button class="submit-button" @onclick="LoginUtilizador">Iniciar sessão</button>
+	</div>
+</div>
+
+
+@code {
+	public string email { get; set; } = "";
+
+	public string password { get; set; } = "";
+
+	public bool authFailed = false;
+
+	public async Task LoginUtilizador()
+	{
+		authFailed = false;
+		Utilizador utilizador = await _db.findUtilizador(email);
+		if(utilizador == null || utilizador.password != password){
+			authFailed = true;
+			return;
+		}
+
+		var asp = (AuthStateProvider)authenticationStateProvider;
+		asp.NotifyLogin(utilizador.email, utilizador.tipo);
+
+		if (utilizador.tipo.Equals("cliente") || utilizador.tipo.Equals("funcionario") || utilizador.tipo.Equals("administrador"))
+		{
+			navManager.NavigateTo("/UserHome");
+		}
+		else{
+			authFailed = true;
+		}
+	}
+}

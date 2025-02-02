@@ -1,0 +1,213 @@
+﻿.body {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
+.body-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4e492;
+    width: 38%;
+}
+
+.logo {
+    border: 8px solid black;
+    border-radius: 50%;
+}
+
+.left-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    padding: 20px 0;
+    flex-direction: column;
+}
+
+.left-title {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.body-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #333333;
+    width: 68%;
+}
+
+.right-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    text-align: center;
+    position: relative;
+    height: 100%;
+}
+
+.outer-order-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 35%;
+}
+
+.order-input {
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    border: 2px solid white;
+    border-radius: 50px;
+    text-align: center;
+    padding: 16px;
+}
+
+    .order-input input {
+        background-color: transparent;
+        border: none;
+        text-align: center;
+        color: white;
+        font: 28px;
+    }
+
+    .order-input *:focus{
+        outline: none;
+    }
+
+.outer-order-display {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 36px;
+    width: 100%;
+}
+
+.order-display {
+    border: 3px solid #f4e492;
+    border-radius: 20px;
+    height: 105%;
+    width: 74%;
+    background-color: white;
+    color: black;
+    display: flex;
+}
+
+.display-left {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+    .display-left img {
+        width: 250px;
+        height: 200px;
+        object-fit: cover;
+        border: 1.5px solid white;
+        border-radius: 12px;
+    }
+
+.product-name {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+.left-text {
+    text-align: left;
+    font-weight: 500;
+    font-size: 1.3rem;
+    overflow-y: auto;
+}
+
+.ingredientes {
+    font-size: 1.9rem;
+}
+
+.display-right {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.display-right .product-name {
+    font-size: 2rem;
+}
+
+.display-passo {
+    position: absolute;
+    flex-direction: column;
+    transition: opacity 0.3s ease-in-out;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 30px;
+    opacity: 0;
+}
+
+    .display-passo.active {
+        opacity: 1;
+    }
+
+    .display-passo img {
+        width: 170px;
+        height: 170px;
+        object-fit: cover;
+        border: 1.5px solid white;
+        border-radius: 12px;
+    }
+
+.passo-button {
+    border: 2px solid black;
+    border-radius: 50px;
+    font-size: 24px;
+    font-weight: 500;
+    padding: 16px;
+    cursor: pointer;
+}
+
+    .passo-button:hover {
+        background-color: #f4e492;
+    }
+
+.controlos {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 180px;
+}
+
+.page-control {
+    color: black;
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 2rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.descricao {
+    font-size: 1.5rem;
+    max-width: 452px;
+}

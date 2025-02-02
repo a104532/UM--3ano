@@ -1,0 +1,41 @@
+﻿@page "/logout"
+@rendermode InteractiveServer
+@using DataAccessLibrary.Interfaces
+@using DataAccessLibrary.Models
+@using SIGPAST.Pages
+@using SIGPAST.Authentication
+@inject IUtilizadoresData _db
+@inject IJSRuntime JsRuntime
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authenticationStateProvider
+
+<PageTitle>Logout</PageTitle>
+
+<Home />
+
+<div class="overlay">
+	<div class="outer-logout">
+		<p class="logout-text">Deseja terminar sessão?</p>
+		<hr>
+		<div class="outer-buttons">
+			<button class="submit-button" @onclick="DoLogout">Sim</button>
+			<button class="submit-button" @onclick="GoBack">Não</button>
+		</div>
+	</div>
+</div>
+
+@code {
+
+	private void DoLogout()
+	{
+		var asp = (AuthStateProvider)authenticationStateProvider;
+		asp.NotifyLogout();
+		navManager.NavigateTo("/");
+	}
+
+	//TODO será que chaga assim?
+	private async Task GoBack()
+	{
+		await JsRuntime.InvokeVoidAsync("history.back");
+	}
+}
